@@ -287,26 +287,8 @@ static struct PyModuleDef dydict_module = {
     "dynamicdict",
     "Module containing dynamicdict",
     -1,
-    dydict_module_methods,
-    NULL,
-    NULL,
-    NULL,
-    NULL
+    dydict_module_methods
 };
-
-PyMODINIT_FUNC init_module(void) {
-    PyObject* m;
-    m = PyModule_Create(&dydict_module);
-    if (m == NULL)
-        return NULL;
-
-    if (PyType_Ready(&dydict_type) < 0)
-        return NULL;
-    Py_INCREF(&dydict_type);
-    PyModule_AddObject(m, "dynamicdict", (PyObject *)&dydict_type);
-
-    return m;
-}
 
 PyMODINIT_FUNC PyInit_dynamicdict(void) {
     PyObject* m;
@@ -316,6 +298,7 @@ PyMODINIT_FUNC PyInit_dynamicdict(void) {
 
     if (PyType_Ready(&dydict_type) < 0)
         return NULL;
+        
     Py_INCREF(&dydict_type);
     if (PyModule_AddObject(m, "dynamicdict", (PyObject*) &dydict_type) < 0) {
         Py_DECREF(&dydict_type);
