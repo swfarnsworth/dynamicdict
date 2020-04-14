@@ -7,7 +7,7 @@ def main():
           description="TODO",
           author="Steele Farnsworth",
           author_email="swfarnsworth@gmail.com",
-          ext_modules=[Extension("dynamicdict", ["./dynamicdict/dynamicdict.c"])]
+          ext_modules=[Extension("dynamicdict", ["dynamicdict.c"])]
     )
 
 
