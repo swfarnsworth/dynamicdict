@@ -1,6 +1,6 @@
 # dynamicdict
 
-`dynamicdic` is a Python dict-like class that mirrors the functionality of `defaultdict` in the `collections` library 
+`dynamicdict` is a Python dict-like class that mirrors the functionality of `defaultdict` in the `collections` library 
 of the Python standard library. Similar to `defaultdict`, `dynamicdict` calls a `default_factory` function
 (or any other callable) when one attempts to access a value for which the key does not exist in the dictionary.
 `dynamicdict`, however, passes the missing key to this function. Thus the values for missing keys are created
