@@ -265,49 +265,6 @@ passed to the dict constructor, including keyword arguments.\n\
 /* See comment in xxsubtype.c */
 #define DEFERRED_ADDRESS(ADDR) 0
 
-//static PyTypeObject dydict_type = {
-//        PyVarObject_HEAD_INIT(DEFERRED_ADDRESS(&PyType_Type), 0)
-//        "dynamicdict.dynamicdict",          /* tp_name */
-//        sizeof(dydictobject),              /* tp_basicsize */
-//        0,                                  /* tp_itemsize */
-//        /* methods */
-//        (destructor)dydict_dealloc,        /* tp_dealloc */
-//        0,                                  /* tp_vectorcall_offset */
-//        0,                                  /* tp_getattr */
-//        0,                                  /* tp_setattr */
-//        0,                                  /* tp_as_async */
-//        (reprfunc)dydict_repr,             /* tp_repr */
-//        &dydict_as_number,                 /* tp_as_number */
-//        0,                                  /* tp_as_sequence */
-//        0,                                  /* tp_as_mapping */
-//        0,                                  /* tp_hash */
-//        0,                                  /* tp_call */
-//        0,                                  /* tp_str */
-//        PyObject_GenericGetAttr,            /* tp_getattro */
-//        0,                                  /* tp_setattro */
-//        0,                                  /* tp_as_buffer */
-//        Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC, /* tp_flags */
-//        dydict_doc,                        /* tp_doc */
-//        dydict_traverse,                   /* tp_traverse */
-//        (inquiry)dydict_tp_clear,          /* tp_clear */
-//        0,                                  /* tp_richcompare */
-//        0,                                  /* tp_weaklistoffset*/
-//        0,                                  /* tp_iter */
-//        0,                                  /* tp_iternext */
-//        dydict_methods,                    /* tp_methods */
-//        dydict_members,                    /* tp_members */
-//        0,                                  /* tp_getset */
-//        DEFERRED_ADDRESS(&PyDict_Type),     /* tp_base */
-//        0,                                  /* tp_dict */
-//        0,                                  /* tp_descr_get */
-//        0,                                  /* tp_descr_set */
-//        0,                                  /* tp_dictoffset */
-//        dydict_init,                       /* tp_init */
-//        PyType_GenericAlloc,                /* tp_alloc */
-//        0,                                  /* tp_new */
-//        PyObject_GC_Del,                    /* tp_free */
-//};
-
 static PyTypeObject dydict_type = {
         PyVarObject_HEAD_INIT(NULL, 0)
         .tp_name = "dynamicdict.dynamicdict",          /* tp_name */
@@ -323,10 +280,9 @@ static PyTypeObject dydict_type = {
         .tp_clear = (inquiry)dydict_tp_clear,          /* tp_clear */
         .tp_methods = dydict_methods,                    /* tp_methods */
         .tp_members = dydict_members,                    /* tp_members */
-        .tp_base = DEFERRED_ADDRESS(&PyDict_Type),     /* tp_base */
+        .tp_base = &PyDict_Type,     /* tp_base */
         .tp_init = dydict_init,                       /* tp_init */
         .tp_alloc = PyType_GenericAlloc,                /* tp_alloc */
-        .tp_new = new_dydict,                                  /* tp_new */
         .tp_free = PyObject_GC_Del,                    /* tp_free */
 };
 
