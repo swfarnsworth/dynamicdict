@@ -49,13 +49,6 @@ static inline PyObject* new_dydict(dydictobject *dyd, PyObject *arg) {
     );
 }
 
-//static PyObject* dydict_new(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
-//    dydictobject* self = (dydictobject*) type->tp_alloc(type, 0);
-//    if (self != NULL) {
-//        self->default_factory = new PyObject;
-//    }
-//}
-
 PyDoc_STRVAR(dydict_copy_doc, "D.copy() -> a shallow copy of D.");
 
 static PyObject* dydict_copy(dydictobject *dyd, PyObject *Py_UNUSED(ignored)) {
@@ -129,8 +122,6 @@ static PyMethodDef dydict_methods[] = {
                 dydict_copy_doc},
         {"__reduce__", (PyCFunction)dydict_reduce, METH_NOARGS,
                 reduce_doc},
-//        {"__class_getitem__", (PyCFunction)Py_GenericAlias, METH_O|METH_CLASS,
-//                PyDoc_STR("See PEP 585")},
         {NULL}
 };
 
@@ -267,23 +258,22 @@ passed to the dict constructor, including keyword arguments.\n\
 
 static PyTypeObject dydict_type = {
         PyVarObject_HEAD_INIT(NULL, 0)
-        .tp_name = "dynamicdict.dynamicdict",          /* tp_name */
-        .tp_basicsize = sizeof(dydictobject),              /* tp_basicsize */
-        .tp_itemsize = 0,                                  /* tp_itemsize */
-        /* methods */
-        .tp_dealloc = (destructor)dydict_dealloc,        /* tp_dealloc */
-        .tp_repr = (reprfunc) dydict_repr,             /* tp_repr */
-        .tp_as_number = &dydict_as_number,                 /* tp_as_number */
-        .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC, /* tp_flags */
-        .tp_doc = dydict_doc,                        /* tp_doc */
-        .tp_traverse = dydict_traverse,                   /* tp_traverse */
-        .tp_clear = (inquiry)dydict_tp_clear,          /* tp_clear */
-        .tp_methods = dydict_methods,                    /* tp_methods */
-        .tp_members = dydict_members,                    /* tp_members */
-        .tp_base = &PyDict_Type,     /* tp_base */
-        .tp_init = dydict_init,                       /* tp_init */
-        .tp_alloc = PyType_GenericAlloc,                /* tp_alloc */
-        .tp_free = PyObject_GC_Del,                    /* tp_free */
+        .tp_name = "dynamicdict",
+        .tp_basicsize = sizeof(dydictobject),
+        .tp_itemsize = 0,
+        .tp_dealloc = (destructor)dydict_dealloc,
+        .tp_repr = (reprfunc) dydict_repr,
+        .tp_as_number = &dydict_as_number,
+        .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
+        .tp_doc = dydict_doc,
+        .tp_traverse = dydict_traverse,
+        .tp_clear = (inquiry)dydict_tp_clear,
+        .tp_methods = dydict_methods,
+        .tp_members = dydict_members,
+        .tp_base = &PyDict_Type,
+        .tp_init = dydict_init,
+        .tp_alloc = PyType_GenericAlloc,
+        .tp_free = PyObject_GC_Del,
 };
 
 /* Module code */
@@ -335,4 +325,3 @@ PyMODINIT_FUNC PyInit_dynamicdict(void) {
 
     return m;
 }
-
