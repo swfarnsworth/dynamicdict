@@ -6,7 +6,7 @@ of the Python standard library. Similar to `defaultdict`, `dynamicdict` calls a 
 `dynamicdict`, however, passes the missing key to this function. Thus the values for missing keys are created
 dynamically based on the value of the key itself.
 
-```pythonstub
+```python
 >>> from dynamicdict import dynamicdict
 >>> my_dyd = dynamicdict(str.upper)
 >>> my_dyd['hello'] += ' world'
