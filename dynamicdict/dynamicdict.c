@@ -19,22 +19,19 @@ PyDoc_STRVAR(dydict_missing_doc,
   return value\n\
 ");
 
-static PyObject *
-dydict_missing(dydictobject *dyd, PyObject *key)
-{
+static PyObject* dydict_missing(dydictobject *dyd, PyObject *key) {
     PyObject *factory = dyd->default_factory;
     PyObject *value;
-    PyObject *tup;
+
+    PyObject *tup = PyTuple_Pack(1, key);
+    if (!tup) return NULL;
+
     if (factory == NULL || factory == Py_None) {
         /* XXX Call dict.__missing__(key) */
-        tup = PyTuple_Pack(1, key);
-        if (!tup) return NULL;
         PyErr_SetObject(PyExc_KeyError, tup);
         Py_DECREF(tup);
         return NULL;
     }
-    tup = PyTuple_Pack(1, key);
-    if (!tup) return NULL;
     value = PyObject_Call(factory, tup, NULL);
     if (value == NULL)
         return value;
@@ -45,28 +42,31 @@ dydict_missing(dydictobject *dyd, PyObject *key)
     return value;
 }
 
-static inline PyObject*
-new_dydict(dydictobject *dyd, PyObject *arg)
-{
-    return PyObject_CallFunctionObjArgs((PyObject*)Py_TYPE(dyd),
-                                        dyd->default_factory ? dyd->default_factory : Py_None, arg, NULL);
+static inline PyObject* new_dydict(dydictobject *dyd, PyObject *arg) {
+    return PyObject_CallFunctionObjArgs(
+        (PyObject*) Py_TYPE(dyd),
+        dyd->default_factory ? dyd->default_factory : Py_None, arg, NULL
+    );
 }
+
+//static PyObject* dydict_new(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
+//    dydictobject* self = (dydictobject*) type->tp_alloc(type, 0);
+//    if (self != NULL) {
+//        self->default_factory = new PyObject;
+//    }
+//}
 
 PyDoc_STRVAR(dydict_copy_doc, "D.copy() -> a shallow copy of D.");
 
-static PyObject *
-dydict_copy(dydictobject *dyd, PyObject *Py_UNUSED(ignored))
-{
+static PyObject* dydict_copy(dydictobject *dyd, PyObject *Py_UNUSED(ignored)) {
     /* This calls the object's class.  That only works for subclasses
        whose class constructor has the same signature.  Subclasses that
        define a different constructor signature must override copy().
     */
-    return new_dydict(dyd, (PyObject*)dyd);
+    return new_dydict(dyd, (PyObject*) dyd);
 }
 
-static PyObject *
-dydict_reduce(dydictobject *dyd, PyObject *Py_UNUSED(ignored))
-{
+static PyObject* dydict_reduce(dydictobject *dyd, PyObject *Py_UNUSED(ignored)) {
     /* __reduce__ must return a 5-tuple as follows:
 
        - factory function
@@ -141,18 +141,14 @@ static PyMemberDef dydict_members[] = {
         {NULL}
 };
 
-static void
-dydict_dealloc(dydictobject *dyd)
-{
+static void dydict_dealloc(dydictobject *dyd) {
     /* bpo-31095: UnTrack is needed before calling any callbacks */
     PyObject_GC_UnTrack(dyd);
     Py_CLEAR(dyd->default_factory);
     PyDict_Type.tp_dealloc((PyObject *)dyd);
 }
 
-static PyObject *
-dydict_repr(dydictobject *dyd)
-{
+static PyObject* dydict_repr(dydictobject *dyd) {
     PyObject *baserepr;
     PyObject *defrepr;
     PyObject *result;
@@ -161,8 +157,7 @@ dydict_repr(dydictobject *dyd)
         return NULL;
     if (dyd->default_factory == NULL)
         defrepr = PyUnicode_FromString("None");
-    else
-    {
+    else {
         int status = Py_ReprEnter(dyd->default_factory);
         if (status != 0) {
             if (status < 0) {
@@ -187,9 +182,7 @@ dydict_repr(dydictobject *dyd)
     return result;
 }
 
-static PyObject*
-dydict_or(PyObject* left, PyObject* right)
-{
+static PyObject* dydict_or(PyObject* left, PyObject* right) {
     PyObject *self, *other;
     if (PyObject_TypeCheck(left, &dydict_type)) {
         self = left;
@@ -219,23 +212,17 @@ static PyNumberMethods dydict_as_number = {
         .nb_or = dydict_or,
 };
 
-static int
-dydict_traverse(PyObject *self, visitproc visit, void *arg)
-{
+static int dydict_traverse(PyObject *self, visitproc visit, void *arg) {
     Py_VISIT(((dydictobject *)self)->default_factory);
     return PyDict_Type.tp_traverse(self, visit, arg);
 }
 
-static int
-dydict_tp_clear(dydictobject *dyd)
-{
+static int dydict_tp_clear(dydictobject *dyd) {
     Py_CLEAR(dyd->default_factory);
     return PyDict_Type.tp_clear((PyObject *)dyd);
 }
 
-static int
-dydict_init(PyObject *self, PyObject *args, PyObject *kwds)
-{
+static int dydict_init(PyObject *self, PyObject *args, PyObject *kwds) {
     dydictobject *dyd = (dydictobject *)self;
     PyObject *olddefault = dyd->default_factory;
     PyObject *newdefault = NULL;
@@ -278,48 +265,69 @@ passed to the dict constructor, including keyword arguments.\n\
 /* See comment in xxsubtype.c */
 #define DEFERRED_ADDRESS(ADDR) 0
 
+//static PyTypeObject dydict_type = {
+//        PyVarObject_HEAD_INIT(DEFERRED_ADDRESS(&PyType_Type), 0)
+//        "dynamicdict.dynamicdict",          /* tp_name */
+//        sizeof(dydictobject),              /* tp_basicsize */
+//        0,                                  /* tp_itemsize */
+//        /* methods */
+//        (destructor)dydict_dealloc,        /* tp_dealloc */
+//        0,                                  /* tp_vectorcall_offset */
+//        0,                                  /* tp_getattr */
+//        0,                                  /* tp_setattr */
+//        0,                                  /* tp_as_async */
+//        (reprfunc)dydict_repr,             /* tp_repr */
+//        &dydict_as_number,                 /* tp_as_number */
+//        0,                                  /* tp_as_sequence */
+//        0,                                  /* tp_as_mapping */
+//        0,                                  /* tp_hash */
+//        0,                                  /* tp_call */
+//        0,                                  /* tp_str */
+//        PyObject_GenericGetAttr,            /* tp_getattro */
+//        0,                                  /* tp_setattro */
+//        0,                                  /* tp_as_buffer */
+//        Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC, /* tp_flags */
+//        dydict_doc,                        /* tp_doc */
+//        dydict_traverse,                   /* tp_traverse */
+//        (inquiry)dydict_tp_clear,          /* tp_clear */
+//        0,                                  /* tp_richcompare */
+//        0,                                  /* tp_weaklistoffset*/
+//        0,                                  /* tp_iter */
+//        0,                                  /* tp_iternext */
+//        dydict_methods,                    /* tp_methods */
+//        dydict_members,                    /* tp_members */
+//        0,                                  /* tp_getset */
+//        DEFERRED_ADDRESS(&PyDict_Type),     /* tp_base */
+//        0,                                  /* tp_dict */
+//        0,                                  /* tp_descr_get */
+//        0,                                  /* tp_descr_set */
+//        0,                                  /* tp_dictoffset */
+//        dydict_init,                       /* tp_init */
+//        PyType_GenericAlloc,                /* tp_alloc */
+//        0,                                  /* tp_new */
+//        PyObject_GC_Del,                    /* tp_free */
+//};
+
 static PyTypeObject dydict_type = {
-        PyVarObject_HEAD_INIT(DEFERRED_ADDRESS(&PyType_Type), 0)
-        "dynamicdict.dynamicdict",          /* tp_name */
-        sizeof(dydictobject),              /* tp_basicsize */
-        0,                                  /* tp_itemsize */
+        PyVarObject_HEAD_INIT(NULL, 0)
+        .tp_name = "dynamicdict.dynamicdict",          /* tp_name */
+        .tp_basicsize = sizeof(dydictobject),              /* tp_basicsize */
+        .tp_itemsize = 0,                                  /* tp_itemsize */
         /* methods */
-        (destructor)dydict_dealloc,        /* tp_dealloc */
-        0,                                  /* tp_vectorcall_offset */
-        0,                                  /* tp_getattr */
-        0,                                  /* tp_setattr */
-        0,                                  /* tp_as_async */
-        (reprfunc)dydict_repr,             /* tp_repr */
-        &dydict_as_number,                 /* tp_as_number */
-        0,                                  /* tp_as_sequence */
-        0,                                  /* tp_as_mapping */
-        0,                                  /* tp_hash */
-        0,                                  /* tp_call */
-        0,                                  /* tp_str */
-        PyObject_GenericGetAttr,            /* tp_getattro */
-        0,                                  /* tp_setattro */
-        0,                                  /* tp_as_buffer */
-        Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
-        /* tp_flags */
-        dydict_doc,                        /* tp_doc */
-        dydict_traverse,                   /* tp_traverse */
-        (inquiry)dydict_tp_clear,          /* tp_clear */
-        0,                                  /* tp_richcompare */
-        0,                                  /* tp_weaklistoffset*/
-        0,                                  /* tp_iter */
-        0,                                  /* tp_iternext */
-        dydict_methods,                    /* tp_methods */
-        dydict_members,                    /* tp_members */
-        0,                                  /* tp_getset */
-        DEFERRED_ADDRESS(&PyDict_Type),     /* tp_base */
-        0,                                  /* tp_dict */
-        0,                                  /* tp_descr_get */
-        0,                                  /* tp_descr_set */
-        0,                                  /* tp_dictoffset */
-        dydict_init,                       /* tp_init */
-        PyType_GenericAlloc,                /* tp_alloc */
-        0,                                  /* tp_new */
-        PyObject_GC_Del,                    /* tp_free */
+        .tp_dealloc = (destructor)dydict_dealloc,        /* tp_dealloc */
+        .tp_repr = (reprfunc) dydict_repr,             /* tp_repr */
+        .tp_as_number = &dydict_as_number,                 /* tp_as_number */
+        .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC, /* tp_flags */
+        .tp_doc = dydict_doc,                        /* tp_doc */
+        .tp_traverse = dydict_traverse,                   /* tp_traverse */
+        .tp_clear = (inquiry)dydict_tp_clear,          /* tp_clear */
+        .tp_methods = dydict_methods,                    /* tp_methods */
+        .tp_members = dydict_members,                    /* tp_members */
+        .tp_base = DEFERRED_ADDRESS(&PyDict_Type),     /* tp_base */
+        .tp_init = dydict_init,                       /* tp_init */
+        .tp_alloc = PyType_GenericAlloc,                /* tp_alloc */
+        .tp_new = new_dydict,                                  /* tp_new */
+        .tp_free = PyObject_GC_Del,                    /* tp_free */
 };
 
 /* Module code */
@@ -342,7 +350,6 @@ static struct PyModuleDef dydict_module = {
 
 PyMODINIT_FUNC init_module(void) {
     PyObject* m;
-
     m = PyModule_Create(&dydict_module);
     if (m == NULL)
         return NULL;
@@ -354,3 +361,22 @@ PyMODINIT_FUNC init_module(void) {
 
     return m;
 }
+
+PyMODINIT_FUNC PyInit_dynamicdict(void) {
+    PyObject* m;
+    m = PyModule_Create(&dydict_module);
+    if (m == NULL)
+        return NULL;
+
+    if (PyType_Ready(&dydict_type) < 0)
+        return NULL;
+    Py_INCREF(&dydict_type);
+    if (PyModule_AddObject(m, "dynamicdict", (PyObject*) &dydict_type) < 0) {
+        Py_DECREF(&dydict_type);
+        Py_DECREF(m);
+        return NULL;
+    }
+
+    return m;
+}
+
